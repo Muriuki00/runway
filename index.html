@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Runway</title>
+
+<!-- iOS home screen support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Runway">
+<meta name="theme-color" content="#12141F">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#12141F;
+    --surface:#1B1E2B;
+    --surface-raised:#232739;
+    --border:#2C3044;
+    --text:#F2EFE9;
+    --text-muted:#8A8FA3;
+    --amber:#E8A33D;
+    --amber-dim:#4A3A22;
+    --green:#6FCF97;
+    --green-dim:#20362C;
+    --red:#E2665D;
+    --red-dim:#3B2224;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    padding-bottom:80px;
+  }
+  .wrap{
+    max-width:480px;
+    margin:0 auto;
+    padding:0 18px;
+  }
+  header.top{
+    padding:calc(env(safe-area-inset-top, 0px) + 22px) 18px 14px;
+    max-width:480px;
+    margin:0 auto;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+  }
+  .wordmark{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:0.02em;
+  }
+  .wordmark .dot{color:var(--amber);}
+  .today-date{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--text-muted);
+    letter-spacing:0.03em;
+  }
+
+  /* Today panel */
+  .today-panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:16px 16px 6px;
+    margin:8px 0 22px;
+  }
+  .panel-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    color:var(--amber);
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .empty-today{
+    color:var(--text-muted);
+    font-size:14px;
+    padding:6px 0 16px;
+    line-height:1.5;
+  }
+  .todo-row{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:12px 0;
+    border-top:1px solid var(--border);
+  }
+  .todo-row:first-of-type{border-top:none;}
+  .checkbox{
+    width:20px; height:20px;
+    border-radius:6px;
+    border:1.5px solid var(--text-muted);
+    flex-shrink:0;
+    margin-top:2px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    background:transparent;
+  }
+  .checkbox.done{
+    background:var(--green);
+    border-color:var(--green);
+  }
+  .checkbox.done::after{
+    content:"✓";
+    color:#0E1A14;
+    font-size:13px;
+    font-weight:700;
+  }
+  .todo-body{flex:1; min-width:0;}
+  .todo-title{font-size:14.5px; font-weight:500; line-height:1.35;}
+  .todo-sub{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--text-muted);
+    margin-top:3px;
+  }
+  .todo-sub.overdue{color:var(--red);}
+
+  /* Intentions list */
+  .section-heading{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    color:var(--text-muted);
+    margin:0 2px 10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:12px;
+    position:relative;
+    cursor:pointer;
+  }
+  .card::before, .card::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    width:14px; height:14px;
+    background:var(--bg);
+    border-radius:50%;
+    transform:translateY(-50%);
+  }
+  .card::before{left:-7px;}
+  .card::after{right:-7px;}
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .card-title{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:16.5px;
+    line-height:1.3;
+  }
+  .card-date{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--text-muted);
+    margin-top:4px;
+  }
+  .badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:12.5px;
+    letter-spacing:0.04em;
+    padding:5px 9px;
+    border-radius:7px;
+    background:var(--amber-dim);
+    color:var(--amber);
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .badge.today{background:var(--green-dim); color:var(--green);}
+  .badge.past{background:var(--red-dim); color:var(--red);}
+  .card-progress{
+    margin-top:10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .progress-track{
+    flex:1;
+    height:4px;
+    background:var(--border);
+    border-radius:2px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--amber);
+    border-radius:2px;
+  }
+  .progress-text{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--text-muted);
+  }
+  .dashed{
+    border-top:1.5px dashed var(--border);
+    margin:12px -16px 0;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding:40px 20px;
+    color:var(--text-muted);
+  }
+  .empty-state .glyph{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:32px;
+    color:var(--amber);
+    margin-bottom:10px;
+  }
+  .empty-state p{font-size:14px; line-height:1.5; margin:6px 0 0;}
+
+  /* FAB */
+  .fab{
+    position:fixed;
+    bottom:calc(env(safe-area-inset-bottom, 0px) + 22px);
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--amber);
+    color:#241A08;
+    border:none;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    padding:14px 26px;
+    border-radius:30px;
+    box-shadow:0 6px 20px rgba(232,163,61,0.25);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+  }
+  .fab-plus{font-size:18px; line-height:1;}
+
+  /* Modal / detail screen */
+  .screen{
+    position:fixed;
+    inset:0;
+    background:var(--bg);
+    z-index:20;
+    overflow-y:auto;
+    display:none;
+  }
+  .screen.open{display:block;}
+  .screen-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:calc(env(safe-area-inset-top, 0px) + 18px) 18px 12px;
+    max-width:480px;
+    margin:0 auto;
+  }
+  .icon-btn{
+    background:var(--surface-raised);
+    border:1px solid var(--border);
+    color:var(--text);
+    width:36px; height:36px;
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px;
+    cursor:pointer;
+  }
+  .screen-title{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:16px;
+  }
+  .form-body{max-width:480px; margin:0 auto; padding:6px 18px 40px;}
+  label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    margin:20px 0 8px;
+  }
+  input[type=text], input[type=date], textarea{
+    width:100%;
+    background:var(--surface);
+    border:1px solid var(--border);
+    color:var(--text);
+    border-radius:10px;
+    padding:12px 13px;
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+  }
+  input:focus, textarea:focus{outline:2px solid var(--amber); outline-offset:1px;}
+  textarea{resize:vertical; min-height:60px;}
+
+  .checkpoint-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:8px;
+  }
+  .checkpoint-item input[type=text]{
+    border:none;
+    background:transparent;
+    padding:2px 0;
+    font-size:14px;
+  }
+  .checkpoint-item input[type=date]{
+    width:auto;
+    flex-shrink:0;
+    padding:6px 8px;
+    font-size:12px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .remove-btn{
+    background:none;
+    border:none;
+    color:var(--text-muted);
+    font-size:18px;
+    cursor:pointer;
+    flex-shrink:0;
+    padding:2px 4px;
+  }
+  .add-checkpoint-btn{
+    width:100%;
+    background:none;
+    border:1.5px dashed var(--border);
+    color:var(--text-muted);
+    border-radius:10px;
+    padding:12px;
+    font-family:'Inter', sans-serif;
+    font-size:13.5px;
+    cursor:pointer;
+    margin-top:2px;
+  }
+  .primary-btn{
+    width:100%;
+    background:var(--amber);
+    color:#241A08;
+    border:none;
+    border-radius:12px;
+    padding:15px;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    margin-top:26px;
+    cursor:pointer;
+  }
+  .ghost-btn{
+    width:100%;
+    background:none;
+    border:1px solid var(--border);
+    color:var(--red);
+    border-radius:12px;
+    padding:13px;
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    margin-top:12px;
+    cursor:pointer;
+  }
+  .hint{
+    font-size:12.5px;
+    color:var(--text-muted);
+    margin-top:6px;
+    line-height:1.4;
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wordmark">RUNWAY<span class="dot">.</span></div>
+  <div class="today-date" id="todayDate"></div>
+</header>
+
+<div class="wrap">
+  <div class="today-panel">
+    <div class="panel-label">Today</div>
+    <div id="todayList"></div>
+  </div>
+
+  <div class="section-heading">On the runway</div>
+  <div id="intentionsList"></div>
+</div>
+
+<button class="fab" onclick="openNewIntention()">
+  <span class="fab-plus">+</span> New intention
+</button>
+
+<!-- New / Edit Intention screen -->
+<div class="screen" id="editScreen">
+  <div class="screen-header">
+    <button class="icon-btn" onclick="closeEditScreen()">✕</button>
+    <div class="screen-title" id="editScreenTitle">New intention</div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="form-body">
+    <label for="fTitle">What is it</label>
+    <input type="text" id="fTitle" placeholder="e.g. Date night with Sam">
+
+    <label for="fDate">When it happens</label>
+    <input type="date" id="fDate" onchange="regenerateSuggestions()">
+
+    <label for="fNotes">Notes (optional)</label>
+    <textarea id="fNotes" placeholder="Anything worth remembering about this one"></textarea>
+
+    <label>Checkpoints</label>
+    <div class="hint" id="checkpointHint" style="margin-bottom:10px;">Pick a date above and I'll suggest a few — edit, remove, or add your own.</div>
+    <div id="checkpointsList"></div>
+    <button class="add-checkpoint-btn" onclick="addCheckpoint()">+ Add a checkpoint</button>
+
+    <button class="primary-btn" onclick="saveIntention()">Save intention</button>
+    <button class="ghost-btn" id="deleteBtn" style="display:none;" onclick="deleteIntention()">Delete this intention</button>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'runway.intentions.v1';
+let state = { intentions: [] };
+let editingId = null;
+let draftCheckpoints = [];
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    state = raw ? JSON.parse(raw) : { intentions: [] };
+  }catch(e){ state = { intentions: [] }; }
+}
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function todayISO(){
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  return d.toISOString().slice(0,10);
+}
+function daysBetween(a, b){
+  const A = new Date(a+'T00:00:00');
+  const B = new Date(b+'T00:00:00');
+  return Math.round((B - A) / 86400000);
+}
+function formatDateLabel(iso){
+  const d = new Date(iso+'T00:00:00');
+  return d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+}
+function uid(){
+  return Math.random().toString(36).slice(2,10);
+}
+
+function renderTodayDate(){
+  document.getElementById('todayDate').textContent =
+    new Date().toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+}
+
+function countdownBadge(dateISO){
+  const t = todayISO();
+  const diff = daysBetween(t, dateISO);
+  if(diff === 0) return { text:'TODAY', cls:'today' };
+  if(diff < 0) return { text:`D+${Math.abs(diff)}`, cls:'past' };
+  return { text:`D-${diff}`, cls:'' };
+}
+
+function render(){
+  renderTodayDate();
+  renderTodayList();
+  renderIntentionsList();
+}
+
+function renderTodayList(){
+  const t = todayISO();
+  const items = [];
+  state.intentions.forEach(intent => {
+    intent.checkpoints.forEach(cp => {
+      if(!cp.done && cp.date <= t){
+        items.push({ intentTitle: intent.title, intentDate: intent.date, cp, intentId: intent.id });
+      }
+    });
+  });
+  items.sort((a,b) => a.cp.date.localeCompare(b.cp.date));
+
+  const container = document.getElementById('todayList');
+  if(items.length === 0){
+    container.innerHTML = `<div class="empty-today">Nothing due today. Open Runway again tomorrow.</div>`;
+    return;
+  }
+  container.innerHTML = items.map(it => {
+    const overdue = it.cp.date < t;
+    return `
+      <div class="todo-row">
+        <div class="checkbox" onclick="toggleCheckpoint('${it.intentId}','${it.cp.id}')"></div>
+        <div class="todo-body">
+          <div class="todo-title">${escapeHtml(it.cp.title)}</div>
+          <div class="todo-sub ${overdue ? 'overdue' : ''}">${escapeHtml(it.intentTitle)} · ${overdue ? 'overdue' : 'due today'}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderIntentionsList(){
+  const container = document.getElementById('intentionsList');
+  const t = todayISO();
+  const active = state.intentions.slice().sort((a,b) => a.date.localeCompare(b.date));
+
+  if(active.length === 0){
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="glyph">＋</div>
+        <p>No intentions yet. Add the thing you're working toward — a date, a shoot, a trip — and Runway will help you break it down.</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = active.map(intent => {
+    const badge = countdownBadge(intent.date);
+    const total = intent.checkpoints.length;
+    const done = intent.checkpoints.filter(c => c.done).length;
+    const pct = total ? Math.round((done/total)*100) : 0;
+    return `
+      <div class="card" onclick="openEditIntention('${intent.id}')">
+        <div class="card-top">
+          <div>
+            <div class="card-title">${escapeHtml(intent.title)}</div>
+            <div class="card-date">${formatDateLabel(intent.date)}</div>
+          </div>
+          <div class="badge ${badge.cls}">${badge.text}</div>
+        </div>
+        ${total > 0 ? `
+        <div class="dashed"></div>
+        <div class="card-progress">
+          <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+          <div class="progress-text">${done}/${total}</div>
+        </div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function toggleCheckpoint(intentId, cpId){
+  const intent = state.intentions.find(i => i.id === intentId);
+  if(!intent) return;
+  const cp = intent.checkpoints.find(c => c.id === cpId);
+  if(!cp) return;
+  cp.done = !cp.done;
+  save();
+  render();
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+/* ---------- Edit / New screen ---------- */
+
+function openNewIntention(){
+  editingId = null;
+  document.getElementById('editScreenTitle').textContent = 'New intention';
+  document.getElementById('fTitle').value = '';
+  document.getElementById('fDate').value = '';
+  document.getElementById('fNotes').value = '';
+  document.getElementById('deleteBtn').style.display = 'none';
+  document.getElementById('checkpointHint').style.display = 'block';
+  draftCheckpoints = [];
+  renderCheckpointsList();
+  document.getElementById('editScreen').classList.add('open');
+}
+
+function openEditIntention(id){
+  const intent = state.intentions.find(i => i.id === id);
+  if(!intent) return;
+  editingId = id;
+  document.getElementById('editScreenTitle').textContent = 'Edit intention';
+  document.getElementById('fTitle').value = intent.title;
+  document.getElementById('fDate').value = intent.date;
+  document.getElementById('fNotes').value = intent.notes || '';
+  document.getElementById('deleteBtn').style.display = 'block';
+  document.getElementById('checkpointHint').style.display = 'none';
+  draftCheckpoints = intent.checkpoints.map(c => ({...c}));
+  renderCheckpointsList();
+  document.getElementById('editScreen').classList.add('open');
+}
+
+function closeEditScreen(){
+  document.getElementById('editScreen').classList.remove('open');
+}
+
+function renderCheckpointsList(){
+  const container = document.getElementById('checkpointsList');
+  if(draftCheckpoints.length === 0){
+    container.innerHTML = `<div class="hint" style="margin-bottom:10px;">No checkpoints yet.</div>`;
+    return;
+  }
+  container.innerHTML = draftCheckpoints.map((cp, idx) => `
+    <div class="checkpoint-item">
+      <input type="date" value="${cp.date}" onchange="updateCheckpointField(${idx}, 'date', this.value)">
+      <input type="text" value="${escapeHtml(cp.title)}" placeholder="Checkpoint" onchange="updateCheckpointField(${idx}, 'title', this.value)">
+      <button class="remove-btn" onclick="removeCheckpoint(${idx})">✕</button>
+    </div>
+  `).join('');
+}
+
+function updateCheckpointField(idx, field, value){
+  draftCheckpoints[idx][field] = value;
+}
+
+function addCheckpoint(){
+  const eventDate = document.getElementById('fDate').value || todayISO();
+  draftCheckpoints.push({ id: uid(), title:'New checkpoint', date: eventDate, done:false });
+  renderCheckpointsList();
+}
+
+function removeCheckpoint(idx){
+  draftCheckpoints.splice(idx, 1);
+  renderCheckpointsList();
+}
+
+function regenerateSuggestions(){
+  // Only auto-suggest for brand-new intentions with no checkpoints added yet
+  if(editingId !== null || draftCheckpoints.length > 0) return;
+  const eventDate = document.getElementById('fDate').value;
+  if(!eventDate) return;
+  const t = todayISO();
+  const daysOut = daysBetween(t, eventDate);
+  if(daysOut < 0) return;
+
+  const suggestions = [];
+  const offsets = [
+    { days: 7,  title: 'Initial planning' },
+    { days: 3,  title: 'Confirm details / logistics' },
+    { days: 1,  title: 'Final check' },
+  ];
+  offsets.forEach(o => {
+    if(o.days <= daysOut){
+      const d = new Date(eventDate + 'T00:00:00');
+      d.setDate(d.getDate() - o.days);
+      suggestions.push({ id: uid(), title: o.title, date: d.toISOString().slice(0,10), done:false });
+    }
+  });
+  if(suggestions.length === 0){
+    // event is today or tomorrow — just one same-day nudge
+    suggestions.push({ id: uid(), title: 'Final check', date: t, done:false });
+  }
+  draftCheckpoints = suggestions.sort((a,b) => a.date.localeCompare(b.date));
+  renderCheckpointsList();
+}
+
+function saveIntention(){
+  const title = document.getElementById('fTitle').value.trim();
+  const date = document.getElementById('fDate').value;
+  const notes = document.getElementById('fNotes').value.trim();
+
+  if(!title || !date){
+    alert('Give it a name and a date first.');
+    return;
+  }
+
+  const cleanCheckpoints = draftCheckpoints
+    .filter(c => c.title.trim() && c.date)
+    .map(c => ({ ...c, title: c.title.trim() }));
+
+  if(editingId){
+    const intent = state.intentions.find(i => i.id === editingId);
+    intent.title = title;
+    intent.date = date;
+    intent.notes = notes;
+    intent.checkpoints = cleanCheckpoints;
+  } else {
+    state.intentions.push({
+      id: uid(),
+      title, date, notes,
+      checkpoints: cleanCheckpoints
+    });
+  }
+  save();
+  closeEditScreen();
+  render();
+}
+
+function deleteIntention(){
+  if(!editingId) return;
+  if(!confirm('Delete this intention? This can\'t be undone.')) return;
+  state.intentions = state.intentions.filter(i => i.id !== editingId);
+  save();
+  closeEditScreen();
+  render();
+}
+
+/* init */
+load();
+render();
+
+/* register service worker for offline use, if present */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>

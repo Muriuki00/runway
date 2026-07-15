@@ -1,0 +1,16 @@
+{
+  "name": "Runway",
+  "short_name": "Runway",
+  "description": "Turn what you're working toward into checkpoints you actually see in time.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#12141F",
+  "theme_color": "#12141F",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
